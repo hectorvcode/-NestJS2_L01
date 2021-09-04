@@ -1,0 +1,306 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is an Application Server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For this sample, you can use the api key `special-key` to test the authorization filters.",
+        "version": "1.0.0",
+        "title": "Corporate Application",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "email": "hectorfabiovasquez@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "host": "petstore.swagger.io",
+    "basePath": "/v2",
+    "tags": [
+        {
+            "name": "user",
+            "description": "Everything about your users"
+        },
+        {
+            "name":"login",
+            "description":"Everything about Log In"
+        }
+    ],
+    "schemes": [
+        "https",
+        "http"
+    ],
+    "paths": {
+        "/user": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Create user",
+                "description": "This end-point creates an user",
+                "operationId": "postUser",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/xml"
+                ],
+                "parameters": [
+                    {
+                        "name": "authentication",
+                        "in": "header",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Created user object",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UserPost"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type":"object",
+                            "$ref":"#/definitions/UserCreated"
+                        }
+                    },
+                    "400":{
+                        "description":"Review data sent"
+                    },
+                    "500":{
+                        "description":"Server Error"
+                    }
+                }
+            },
+
+            "get":{
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get users",
+                "description": "This end-point gets all users",
+                "operationId": "getUser",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/xml"
+                ],
+                "parameters": [
+                    {
+                        "description":"get all user objects",
+                        "required":"true"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type":"object",
+                            "$ref":"#/definitions/UserDto"
+                        }
+                    },
+                    "500":{
+                        "description":"Server Error"
+                    }
+                }
+            }
+        },
+        "/user/login": {
+            "post": {
+                "tags": [
+                    "login"
+                ],
+                "summary": "Login user",
+                "description": "This can only be done by the authenticated user.",
+                "operationId": "loginUser",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/xml"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Data to log in",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UserLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description":"ok",
+                        "schema":{
+                            "type":"array",
+                            "items":{
+                                "$ref":"#/definitions/UserDto"
+                            }
+                        }
+                    },
+                    "500":{
+                        "description":"Server Error"
+                    }
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+            "bearer": {
+            "type": "bearer",
+            "name": "bearer",
+            "in": "header"
+            }
+    },
+    "definitions": {
+        "UserPost": {
+            "type": "object",
+            "required":[
+                "name",
+                "lastName",
+                "email",
+                "password"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example":"Hector"
+                },
+                "lastName": {
+                    "type": "string",
+                    "example":"Vasquez"
+                },
+                "email": {
+                    "type": "string",
+                    "example":"hector@email.com",
+                    "description":"Should be a vaid email"
+                },
+                "password": {
+                    "type": "string",
+                    "example":"Qwsdd2345&yid",
+                    "descripcion":"Should have an uppercase, lowercase, number, special character and minumum 8 length"
+                },
+                "gender": {
+                    "type": "string",
+                    "enum":[
+                        "male",
+                        "female"
+                    ]
+                },
+                "birthdate": {
+                    "type": "string",
+                    "example":"2019-08-24T14:15:22Z",
+                    "format": "date-time"
+                }
+            },
+            "xml": {
+                "name": "User"
+            }
+        },
+        "UserCreated":{
+            "type":"object",
+            "properties":{
+                "id":{
+                    "type":"string",
+                    "format":"uuid",
+                    "example":"9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+                },
+                "name":{
+                    "type":"string",
+                    "example":"Hector"
+                },
+                "lastName":{
+                    "type":"string",
+                    "example":"Vasquez"
+                },
+                "email":{
+                    "type":"string",
+                    "example":"hector@email.com"
+                },
+                "gender":{
+                    "type":"string",
+                    "enum":[
+                        "male",
+                        "female"
+                    ]
+                },
+                "birthDate":{
+                    "type":"string",
+                    "format":"date-time",
+                    "example":"2019-08-24T14:15:22Z"
+                },
+                "creationDate":{
+                    "type":"string",
+                    "format":"date-time",
+                    "example":"2019-08-24T14:15:22Z"
+                },
+                "verifiedEmail":{
+                    "type":"boolean",
+                    "example":"false"
+                }
+            }
+        },
+        "UserLogin":{
+            "type":"object",
+            "required":[
+                "email",
+                "password"
+            ],
+            "properties":{
+                "email":{
+                    "type":"string",
+                    "example":"hector@email.com",
+                    "description":"Should be a vaid email"
+                },
+                "password":{
+                    "type": "string",
+                    "example": "C0n3xi0n!!",
+                    "description": "should have an uppercase, lowercase, number, special charecter and min 8 lenght"
+                }
+            }
+        },
+        "UserDto":{
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Hector"
+                },
+                    "last_name": {
+                    "type": "string",
+                    "example":"Vasquez"
+                },
+                    "email": {
+                    "type": "string",
+                    "example": "hector@email.com"
+                },
+                    "lastConnection": {
+                    "type": "string",
+                    "example": "Hola por primera vez"
+                },
+                    "token": {
+                    "type": "string",
+                    "example": "logged token"
+                }
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "Find out more about Swagger",
+        "url": "http://swagger.io"
+    }
+}
