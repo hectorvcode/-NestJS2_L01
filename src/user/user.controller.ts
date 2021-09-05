@@ -84,7 +84,8 @@ export class UserController {
                 .send({error: 'email or password invalid'});
             }
 
-            const token = this.createToken(user);
+            //const token = this.createToken(user);
+            const token = "nestJS";
             user.token = token;
 
             const queryLastConnection = await this.knex('connection').where({user_id: user.id});

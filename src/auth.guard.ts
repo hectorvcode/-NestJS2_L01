@@ -18,15 +18,26 @@ export class AuthGuard implements CanActivate {
     }
 
     const token = request.headers.bearer.split(' ')[1];
+    //const tokenNest =  request.headres.bearer;
 
     try{
-      const payload = jwt.decode(token, SUPER_SECRET_KEY);
-      console.log(token);
-      
-    } catch(err) {
+      if(token == 'nestJS'){
+        //const payload = jwt.decode(token, SUPER_SECRET_KEY);
+        console.log(token);
+      }
+    }catch(err){
       Logger.error(err.message);
-      return false;
+      return false
     }
+
+    // try{
+    //   const payload = jwt.decode(token, SUPER_SECRET_KEY);
+    //   console.log(token);
+      
+    // } catch(err) {
+    //   Logger.error(err.message);
+    //   return false;
+    // }
 
     
 
