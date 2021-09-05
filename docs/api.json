@@ -47,7 +47,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "authentication",
+                        "name": "bearer",
                         "in": "header",
                         "required": true,
                         "type": "string"

@@ -1,15 +1,20 @@
-import { Body, Controller, Get, HttpStatus, Logger, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Logger, Post, Res, UseGuards } from '@nestjs/common';
 import { JoiPassword } from "joi-password";
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import Knex from 'knex';
 import { NestjsKnexService } from 'nestjs-knexjs';
 import * as bcrypt from 'bcrypt';
+import { AuthGuard } from 'src/auth.guard';
+import * as moment from 'moment';
+import * as jwt from 'jwt-simple';
 
 enum gender {
     MALE = 'male',
     FEMALE = 'female'
   }
+
+const SUPER_SECRET_KEY = 'La clave secreta';
   
   const Joi = require('joi').extend(require('@joi/date'));
 
@@ -45,6 +50,7 @@ export class UserController {
     }
 
     @Get()
+    @UseGuards(new AuthGuard())
     public async get(@Res() response: Response){
         const tableData = await this.knex('user').select('*');
         return response.status(HttpStatus.OK).send({ tableData });
@@ -61,6 +67,7 @@ export class UserController {
                 .send({error: result.error});
             }
 
+            //consulta a base de datos para validar password
             const queryResult = await this.knex('user').where({email: body.email});
             if(!queryResult.length){
                 return response
@@ -69,14 +76,39 @@ export class UserController {
             }
 
             const user = queryResult[0];
+
             const isValidPassword = bcrypt.compareSync(body.password,user.password);
             if(!isValidPassword){
                 return response
                 .status(HttpStatus.BAD_REQUEST)
                 .send({error: 'email or password invalid'});
             }
+
+            const token = this.createToken(user);
+            user.token = token;
+
+            const queryLastConnection = await this.knex('connection').where({user_id: user.id});
+            console.log({queryLastConnection});
+            user.lastConnection = !queryLastConnection.length
+            ? 'Hola por primera vez'
+            : queryLastConnection[0].last_connection;
             
-            console.log(user);
+            const newConnection= {
+                user_id: user.id,
+                last_connection: 'hoy'
+            }
+
+            const updateResult = await this.knex('connection')
+            .update(newConnection)
+            .where({user_id: user.id});
+            
+            //console.log(user);
+
+            delete user.password;
+
+            return response
+            .status(HttpStatus.OK)
+            .send({user});
             
 
         }catch(err){
@@ -86,6 +118,16 @@ export class UserController {
         }
     }
 
+    private createToken(user){
+        const payload = {
+            email: user.email,
+            mensajePlay: 'hola',
+            sub: user.id,
+            iat: moment().unix(),
+            exp: moment().add(1, 'days').unix()
+        };
+        return jwt.encode(payload, SUPER_SECRET_KEY);
+    }
     
     @Post()
     public async post(@Body() body: any, @Res() response: Response){

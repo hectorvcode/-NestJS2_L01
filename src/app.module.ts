@@ -5,6 +5,7 @@ import { UserController } from './user/user.controller';
 import { NestjsKnexModule } from 'nestjs-knexjs';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AuthGuard } from './auth.guard';
 
 
 @Module({
@@ -23,6 +24,6 @@ import { join } from 'path';
       },
   })],
   controllers: [AppController, UserController],
-  providers: [AppService],
+  providers: [AppService, AuthGuard],
 })
 export class AppModule {}
