@@ -56,8 +56,78 @@ export class UserController {
         return response.status(HttpStatus.OK).send({ tableData });
     }
 
+    @Get('getGuard')
+    @UseGuards(new AuthGuard())
+    public async getGuard(@Res() response: Response){
+        const tableData = await this.knex('user').select('*');
+        return response.status(HttpStatus.OK).send({ tableData });
+    }
+
     @Post('login')
     public async login(@Body() body: any, @Res() response: Response){
+        try{
+            console.log(body);
+            const result = schemaLogin.validate(body);
+            if(result.error){
+                return response
+                .status(HttpStatus.BAD_REQUEST)
+                .send({error: result.error});
+            }
+
+            //consulta a base de datos para validar password
+            const queryResult = await this.knex('user').where({email: body.email});
+            if(!queryResult.length){
+                return response
+                .status(HttpStatus.BAD_REQUEST)
+                .send({error: 'email or password invalid'});
+            }
+
+            const user = queryResult[0];
+
+            const isValidPassword = bcrypt.compareSync(body.password,user.password);
+            if(!isValidPassword){
+                return response
+                .status(HttpStatus.BAD_REQUEST)
+                .send({error: 'email or password invalid'});
+            }
+
+            //const token = this.createToken(user);
+            const token = "nestJS";
+            user.token = token;
+
+            const queryLastConnection = await this.knex('connection').where({user_id: user.id});
+            console.log({queryLastConnection});
+            user.lastConnection = !queryLastConnection.length
+            ? 'Hola por primera vez'
+            : queryLastConnection[0].last_connection;
+            
+            const newConnection= {
+                user_id: user.id,
+                last_connection: 'hoy'
+            }
+
+            const updateResult = await this.knex('connection')
+            .update(newConnection)
+            .where({user_id: user.id});
+            
+            //console.log(user);
+
+            delete user.password;
+
+            return response
+            .status(HttpStatus.OK)
+            .send({user});
+            
+
+        }catch(err){
+            return response
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .send({ error: err.message });
+        }
+    }
+
+    @Post('newLogin')
+    public async newLogin(@Body() body: any, @Res() response: Response){
         try{
             console.log(body);
             const result = schemaLogin.validate(body);
@@ -125,7 +195,7 @@ export class UserController {
             mensajePlay: 'hola',
             sub: user.id,
             iat: moment().unix(),
-            exp: moment().add(1, 'days').unix()
+            exp: moment().add(1, 'minute').unix()
         };
         return jwt.encode(payload, SUPER_SECRET_KEY);
     }
